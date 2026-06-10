@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  name      String
+  role      String    @default("USER")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  events    Event[]   @relation("Organizer")
+  bookings  Booking[]
+  tickets   Ticket[]  @relation("UserTickets")
+}
+
+model Event {
+  id             String    @id @default(uuid())
+  title          String
+  description    String
+  date           DateTime
+  venue          String
+  price          Float
+  capacity       Int
+  availableSeats Int       @default(0)
+  bannerUrl      String?
+  galleryUrl     String?   
+  categoryId     String
+  category       Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  organizerId    String
+  organizer      User      @relation("Organizer", fields: [organizerId], references: [id], onDelete: Cascade)
+  bookings       Booking[]
+  tickets        Ticket[]
+  status         String    @default("PUBLISHED")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([categoryId])
+  @@index([organizerId])
+  @@index([date])
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  events      Event[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Booking {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tickets   Int
+  total     Float
+  status    String   @default("CONFIRMED")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Ticket    Ticket[]
+
+  @@unique([userId, eventId])
+  @@index([userId])
+  @@index([eventId])
+}
+
+model Ticket {
+  id          String   @id @default(uuid())
+  bookingId   String
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?    @relation("UserTickets", fields: [userId], references: [id], onDelete: Cascade)
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventName   String?
+  venue       String?
+  date        DateTime?
+  seatNumber  String?  
+  qrCodeUrl   String?
+  ticketStatus String   @default("VALID")
+  price       Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([eventId])
+  @@index([userId])
+}
