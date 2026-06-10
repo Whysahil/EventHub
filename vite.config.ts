@@ -11,6 +11,7 @@ export default defineConfig(() => {
         '@': path.resolve(__dirname, './src'),
       },
     },
+    envPrefix: ['VITE_', 'BACKEND_URL', 'FRONTEND_URL'],
     server: {
       hmr: process.env.DISABLE_HMR !== 'true',
       watch: process.env.DISABLE_HMR === 'true' ? null : {},

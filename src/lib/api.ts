@@ -1,7 +1,8 @@
 import axios from 'axios';
 
+const backendUrl = import.meta.env.BACKEND_URL || '';
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: `${backendUrl}/api`,
 });
 
 api.interceptors.request.use((config) => {
